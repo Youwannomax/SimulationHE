@@ -1,47 +1,77 @@
 clear; clc; close all;
 
-% Define the options for the ODE solver
-options = odeset('Events', @event, 'MaxStep', 1e-1);
+%% Initialisation
 
-% Define the properties of the fluid
-MassFlowRate = 0.05; % kg/s
-Temperature = 25; % Initial temperature of the fluid (°C)
-Density = 1000; % Density of the fluid (kg/m^3)
-ThermalConductivity = 0.6; % Thermal conductivity of the fluid (W/(m*K))
-Cp = 4186; % Specific heat capacity of the fluid (J/(kg*K))
+% Define the tube's length
+L = 100;  % Length of the tube
+xf = L;
 
-% Create instances of the HeatExchanger class
-HE1 = HeatExchanger(1, 0.001, 0.05, 40, MassFlowRate, Temperature, Density);
-HE2 = HeatExchanger(2, 0.001, 0.05, 30, MassFlowRate, Temperature, Density);
-
-% Initial conditions for the ODE solver
-tspan = [0 10]; % Time span for the simulation
-y0 = [Temperature, Temperature, Temperature, Temperature]; % Initial temperatures of the inlet and outlet fluids for both heat exchangers
-
-% Initialize variables
+% Initialize the result and the domain
+xspan = [0 xf];
 Yf = [];
-te = 0;
+xResult = [];
+TResult = [];
 
-while te < 1000
-    % Solve the ODE system
-    [t, Y, te, ye, ie] = ode15s(@(t, y) odefoncHE(t, y, HE1, HE2), tspan, y0, options);
+% Initial temperature of fluid
+T0 = 35;
+y0 = T0;
+
+
+%The tube is considered as a heat exchanger
+Tube = HeatExchanger(1, 0.1, 0.05, 400, ...
+                    L, ...                      %Lenght L
+                    0, ...                      %Position 0
+                    0.5, 300, 1000, 0.6, 1000);
+
+%start with tube as a heat exchanger
+currentHe = Tube; 
+
+%% List of heat exchanger 
+
+HE1 = HeatExchanger(6, 0.1, 0.05, 400, ...
+                    40, 20, ...
+                    0.5, 300, 1000, 0.6, 1000);
+
+%HE2
+%HE3
+%...
+
+HEs = [HE1];        %array of heat exchanger
+
+%%
+
+
+options = odeset('Events',@(t, T) event(t, T, HEs),'MaxStep',1e-2);
+
+% Initial position
+x = 0;
+
+while x < xf
     
-    % Handle events
-    if ie == 1
-        % Heat Exchanger 1 position event
-        HE1.FluidObj.Cp = Cp; % Switch to two-phase state
-        y0(1:2) = ye(1:2);
-    elseif ie == 2
-        % End of Heat Exchanger 1 event
-        y0(1:2) = ye(1:2);
-    elseif ie == 3
-        % Heat Exchanger 2 position event
-        HE2.FluidObj.Cp = Cp; % Switch to two-phase state
-        y0(3:4) = ye(3:4);
-    elseif ie == 4
-        % End of Heat Exchanger 2 event
-        y0(3:4) = ye(3:4);
+    %xe :   position at the event
+    %ye :   temperature at the event
+    %ie :   "id" of the event
+
+    [x, T, xe, ye, ie] = ode45(@(x, T) odefoncHE(x, T, currentHe), xspan, y0, options);
+    xspan = [xe xf];
+    y0 = T(end);
+
+    % Store the results
+    xResult = [xResult; x];
+    TResult = [TResult; T];
+    
+    %% Change configuration to the heat exchanger
+    if mod(ie, 2) == 1                         % If event number is odd, we are at the start of a heat exchanger
+        currentHe = HEs((ie + 1)/2);           % Change to the corresponding heat exchanger
+    else                                       % If event number is even, we are at the end of a heat exchanger
+        currentHe = Tube;                      % Change back to the tube
     end
     
-    Yf = [Yf Y'];
+    % Update the position for the next integration
+    x = xe;
 end
+
+% Plot temperature vs position
+plot(xResult, TResult);
+xlabel('Position (m)');
+ylabel('Temperature (°C)');

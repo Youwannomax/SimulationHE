@@ -18,7 +18,7 @@ classdef Fluid
             obj.Cp = Cp;
         end
         
-        % Calculate viscosity
+        % Calculate viscosity (for water)
         function Viscosity = CalcViscosity(obj)
             A = 2.414 * 10^-5; % Pa.s
             B = 247.8; % K

@@ -1,0 +1,44 @@
+clear; clc; close all;
+
+%% Initialisation
+xf = 2;
+xspan = [0 xf];
+Yf = [];
+
+% Initial temperature of fluid
+T0 = 20;
+y0 = T0;
+
+%First exchanger is a tube
+Tube = HeatExchanger(1, 0.1, 0.05, 400, ...
+                    L, 0, ...                       %Position 0
+                    0.5, 300, 1000, 0.6, 1000);
+
+% Define the tube's length
+L = 60;  % Length of the tube
+
+
+%List of heat exchanger
+HE1 = HeatExchanger(2, 0.1, 0.05, 400, ...
+                    40, 20, ...
+                    0.5, 300, 1000, 0.6, 1000);
+
+
+
+
+%% Resolution
+while te < tf
+    [t,Y,te,ye,ie] = ode23(@odefoncHE, tspan, y0, Option);
+    tspan = [te tf];
+    if ie == 1           %la balle rebondit sur le sol 
+        y0 = [ye(1), ye(2), 0.9*ye(3), -0.9*ye(4) ];
+    elseif ie == 2       %la balle s'heurte sur le mur gauche
+        y0 = [ye(1), ye(2), -0.9*ye(3), 0.9*ye(4) ];
+    elseif ie == 3       %la balle rebondit sur le mur droit 
+        y0 = [ye(1), ye(2), -0.9*ye(3), 0.9*ye(4) ];
+    end
+    Yf = [Yf Y'];
+
+end
+Yf = Yf';
+plot(Yf(:,1),Yf(:,2)); 
