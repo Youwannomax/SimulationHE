@@ -1,4 +1,5 @@
 classdef Fluid
+    %Class Fluid
     properties
         MassFlowRate
         Viscosity
@@ -16,6 +17,11 @@ classdef Fluid
             obj.Density = Density;
             obj.ThermalConductivity =ThermalConductivity;
             obj.Cp = Cp;
+        end
+
+        %Setter
+        function obj = set.Temperature(obj, newTemperature)
+            obj.Temperature = newTemperature;
         end
         
         % Calculate viscosity (for water)

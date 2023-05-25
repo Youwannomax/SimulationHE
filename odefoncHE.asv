@@ -1,0 +1,27 @@
+function dTdx = odefoncHE(T, x, heatExchanger)
+%% Properties of the HE
+
+rho = heatExchanger.FluidObj.Density;
+Cp = heatExchanger.FluidObj.Cp;
+W = heatExchanger.FluidObj.MassFlowRate;
+heatExchanger = heatExchanger.FluidObj.set.Temperature(T);
+
+%% Calculation
+
+% Reynolds
+Re = (rho * heatExchanger.CalcVelocity * heatExchanger.DiameterPipe) / heatExchanger.FluidObj.CalcViscosity;
+
+% Prandt
+Pr = Cp * heatExchanger.FluidObj.CalcViscosity / heatExchanger.FluidObj.ThermalConductivity;
+
+% Nusselt
+
+Nu = 0.023 * Re ^ 0.8 * Pr ^ 0.4;
+
+%
+
+
+T_f = 70; %External fluid temperature(°C)
+%Thermic balance
+    dTdx = T_f-T;
+end
