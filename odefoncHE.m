@@ -25,9 +25,9 @@ Nu = 0.023 * Re ^ 0.8 * Pr ^ 0.4;
 
 hi = Nu * d / heatExchanger.FluidObj.ThermalConductivity;
 
-T_f = 70; %External fluid temperature(°C)
+T_f = 50; %External fluid temperature(°C)
 
 %Thermic balance
-    dTdx = (T_f-T) * d * pi / ((hi ^-1 * e/Kp) * W * Cp);
+    dTdx = (T_f-T) * d^2 * pi / ((hi ^-1 + e/Kp) * W * Cp);
 
 end

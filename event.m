@@ -13,10 +13,10 @@ function [value, isterminal, direction] = event(t, y, heatExchangers)
     for i = 1:n
         % Start of heat exchanger
         idxStart = 2 * (i - 1) + 1;
-        value(idxStart) = x - heatExchangers(i).Position;
+        value(idxStart) = abs(x - heatExchangers(i).Position) - 1e-6;
 
         % End of heat exchanger
         idxEnd = 2 * i;
-        value(idxEnd) = x - (heatExchangers(i).Position + heatExchangers(i).Length);
+        value(idxEnd) = abs(x - (heatExchangers(i).Position + heatExchangers(i).Length)) - 1e-6;
     end
 end

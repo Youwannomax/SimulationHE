@@ -3,7 +3,7 @@ clear; clc; close all;
 %% Initialisation
 
 % Define the tube's length
-L = 140;  % Length of the tube
+L = 100;  % Length of the tube
 
 % Initialize the result
 xResult = [];
@@ -17,7 +17,7 @@ T0 = 35;
 Tube = HeatExchanger(1, 0.1, 0.05, 400, ...
                     L, ...                      %Lenght L
                     0, ...                      %Position 0
-                    0.5, T0, 1000, 0.6, 1000);
+                    0.5, T0, 1000, 0.6, 40);
 
 %start with tube as a heat exchanger
 currentHe = Tube; 
@@ -27,11 +27,11 @@ currentHe = Tube;
 HE1 = HeatExchanger(6, 0.1, 0.05, 400, ...
                     40, ...
                     20, ...
-                    0.5, T0, 1000, 0.6, 1000);
+                    0.5, T0, 1000, 0.6, 4000);
 
 HE2 = HeatExchanger(9, 0.1, 0.05, 400, ...
-                    40, ...
-                    20, ...
+                    10, ...
+                    80, ...
                     0.5, T0, 1000, 0.6, 1000);
 
 %HE2
@@ -45,7 +45,7 @@ HEs = [HE1];        %array of heat exchanger
 remainingLength = L - sum([HEs.Length]);  % calculate remaining length after all heat exchangers
 
 
-options = odeset('Events',@(t, T) event(t, T, HEs),'MaxStep',1e-2);
+options = odeset('Events',@(t, T) event(t, T, HEs),'MaxStep',1e-1);
 
 % Initial position
 xe = 0;
@@ -60,9 +60,9 @@ while xe < xf
     %ie :   "id" of the event
 
     [x, T, xe, ye, ie] = ode45(@(x, T) odefoncHE(x, T, currentHe), xspan, y0, options);
-    xspan = [xe(end) xf];
+    xspan = [xe xf];
     y0 = T(end);
-
+ 
     % Store the results
     xResult = [xResult; x];
     TResult = [TResult; T];
