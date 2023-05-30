@@ -16,7 +16,7 @@ classdef Fluid
             obj.Temperature = Temperature;
             obj.Density = Density;
             obj.ThermalConductivity =ThermalConductivity;
-            obj.Cp = Cp;
+            obj.Cp = Cp;                                    %constant in our temperature's range
         end
 
         %Setter
@@ -24,7 +24,7 @@ classdef Fluid
             obj.Temperature = newTemperature;
         end
         
-        % Calculate viscosity (for water)
+        % Calculate viscosity (coefficient for water)
         function Viscosity = CalcViscosity(obj)
             A = 2.414 * 10^-5; % Pa.s
             B = 247.8; % K

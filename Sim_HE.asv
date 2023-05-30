@@ -35,13 +35,12 @@ HE2 = HeatExchanger(9, 0.1, 0.05, 400, ...
                     80, ...
                     0.5, T0, 1000, 0.6, 1000);
 
-HE3 = HeatExchanger(18, 0.1, 0.05, 400, ...
-                    600, ...
-                    500, ...
+HE2 = HeatExchanger(18, 0.1, 0.05, 400, ...
+                    10, ...
+                    80, ...
                     0.5, T0, 1000, 0.6, 1000);
 
-HEs = [HE1];        % array of heat exchangers
-HEs2 = [HE1, HE3];        % array of heat exchangers
+HEs = [HE1,HE2];        % array of heat exchangers
 
 %% Initialisation of the integration
 
@@ -62,10 +61,8 @@ remainingLength = L - sum([HEs.Length]);
 
 
 %% Integration
-function [X, T] = function
+
 options = odeset('Events', @(t, T) event(t, T, HEs), 'MaxStep', 1e-1);  % Adjust 'MaxStep' accordingly
-
-
 options_noHE = odeset('MaxStep', 1e-1);
 
 while xe < xf
@@ -75,7 +72,6 @@ while xe < xf
     % ie :   "id" of the event
 
     [x, T, xe, ye, ie] = ode45(@(x, T) odefoncHE(x, T, currentHe), xspan, y0, options);
-    
     
 
     % debug

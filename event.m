@@ -1,22 +1,15 @@
-function [value, isterminal, direction] = event(t, y, heatExchangers)
-    % EVENT Event function for the heat exchanger system
+function [position, isterminal, direction] = event(x, T, HEs)
+    numEvents = 2 * length(HEs);
+    position = zeros(1, numEvents);      % Preallocate memory for position
+    isterminal = ones(1, numEvents);     % The integration halts at these events
+    direction = zeros(1, numEvents);     % The zero approached either direction
 
-    x = y;  % Position of fluid in the tube
-
-    % Initialize event values
-    n = numel(heatExchangers);  % Number of heat exchangers
-    value = zeros(1, 2 * n);
-    isterminal = ones(1, 2 * n);
-    direction = ones(1, 2 * n);
-
-    % Check if fluid is at the location of each heat exchanger
-    for i = 1:n
-        % Start of heat exchanger
-        idxStart = 2 * (i - 1) + 1;
-        value(idxStart) = abs(x - heatExchangers(i).Position) - 1e-6;
-
-        % End of heat exchanger
-        idxEnd = 2 * i;
-        value(idxEnd) = abs(x - (heatExchangers(i).Position + heatExchangers(i).Length)) - 1e-6;
+    % For each heat exchanger set up 2 events
+    for i = 1:length(HEs)
+        position(2 * i - 1) = x - HEs(i).Position;               % Event triggered when reaching the start of the heat exchanger
+        position(2 * i) = x - (HEs(i).Position + HEs(i).Length); % Event triggered when reaching the end of the heat exchanger
     end
+    
+    % Set the direction of the events to detect only the first event
+    direction(1:2:numEvents) = 1;   % Only trigger the event when approaching from below (increasing x)
 end
