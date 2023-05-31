@@ -1,7 +1,8 @@
 # SimulationHE
+
  My first repository. About simulation of a heat exchanger in geothermal energy
  
- ## Projet descirption
+ ## Projet description
  
  This project try to simulate a network of heat exchanger for geothermy in order to see the impact of different configuration of HE.
  
@@ -13,7 +14,7 @@
  Here is the final equation
  
  
- ## Goal
+ ## Next
  
  There is still a lot to do :
  Relation between Area and Distance
@@ -28,7 +29,29 @@
  
  ### How to create an HE
  
+ To create a HE, you need those information
+ 
+ Pipe
+ 
+    NumberPipe
+    ThicknessPipe
+    DiameterPipe
+    ThermalConductivityPipe
+    Length
+    Position
+        
+  Internal Fluid
+  
+    FluidObj
+    FluidCoeff
+    Velocity
+        
+ And enter them as following :
+ obj = HeatExchanger(NumberPipe, ThicknessPipe, DiameterPipe, ThermalConductivityPipe, Length, Position, MassFlowRate, Temperature, Density, ThermalConductivity, Cp)
+ 
  ### Modelisation
+ 
+ 
  
  #### Examples
  
