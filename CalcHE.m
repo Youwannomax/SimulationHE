@@ -1,5 +1,13 @@
 function [X, T] = CalcHE (HEs)
 
+%% Function Calc
+
+% ENTRY : array of Heat Exchanger
+% GIVE : Temperature against the Area (m²)
+
+%%
+
+
 %% Initialisation of Heat Exchanger
 
 % Define the tube's length

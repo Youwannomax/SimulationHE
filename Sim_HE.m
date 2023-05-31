@@ -41,7 +41,7 @@ HE3 = HeatExchanger(18, 0.1, 0.05, 400, ...
                     0.5, T0, 1000, 0.6, 1000);
 
 HEs = [HE1];        % array of heat exchangers
-HEs2 = [HE1, HE3];        % array of heat exchangers
+HEs2 = [HE1, HE3];  % array of heat exchangers
 
 %% Initialisation of the integration
 
@@ -62,11 +62,8 @@ remainingLength = L - sum([HEs.Length]);
 
 
 %% Integration
-function [X, T] = function
-options = odeset('Events', @(t, T) event(t, T, HEs), 'MaxStep', 1e-1);  % Adjust 'MaxStep' accordingly
 
-
-options_noHE = odeset('MaxStep', 1e-1);
+options = odeset('Events', @(t, T) event(t, T, HEs), 'MaxStep', 1e-1); 
 
 while xe < xf
     
@@ -109,20 +106,20 @@ while xe < xf
         end
         Tube.Length = remainingLength;
     else
-        if mod(ie(1), 2) == 1
-            currentHe = HEs((ie(1) + 1) / 2);
+        if mod(ie(1), 2) == 1                       %Position of a HE
+            currentHe = HEs((ie(1) + 1) / 2);       %Set to the HE
             remainingLength = remainingLength - (xe(end) - currentHe.Position);
             if remainingLength < 0
-                remainingLength = 0;
+                remainingLength = 0;                %Avoiding negative number
             end
             currentHe.Length = remainingLength;
-        else
-            currentHe = Tube;
+        else                        %End of a HE
+            currentHe = Tube;       %Set to the tube
             remainingLength = remainingLength - HEs(ie(1) / 2).Length;
             if remainingLength < 0
-                remainingLength = 0;
+                remainingLength = 0;                %Avoiding negative number
             end
-            Tube.Length = remainingLength;
+            Tube.Length = remainingLength;          %Set remain length of the tube
         end
     end
 
@@ -133,7 +130,7 @@ while xe < xf
 end
 
 % Tube without any heat exchanger
-
+options_noHE = odeset('MaxStep', 1e-1);
 [x_noHE, T_noHE] = ode15s(@(x, T) odefoncHE(x, T, Tube), [0 xf], T0, options_noHE);
 
 

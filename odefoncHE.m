@@ -19,14 +19,13 @@ Re = (rho * heatExchanger.CalcVelocity * d) / heatExchanger.FluidObj.CalcViscosi
 Pr = Cp * heatExchanger.FluidObj.CalcViscosity / heatExchanger.FluidObj.ThermalConductivity;
 
 % Nusselt
-
 Nu = 0.023 * Re ^ 0.8 * Pr ^ 0.4;
 
 % Heat transfert coefficient
-%local
+% local
 hi = Nu * d / heatExchanger.FluidObj.ThermalConductivity;
 
-%global
+% global
 invU = 1 / hi + e / Kp;
 psi = -1/ (W * Cp);
 
