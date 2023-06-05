@@ -1,4 +1,4 @@
-
+T0 = 273+35;
 %% List of heat exchangers
 
 HE1 = HeatExchanger(30, 0.1, 0.05, 20, ...

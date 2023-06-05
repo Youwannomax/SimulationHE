@@ -33,6 +33,6 @@ psi = -1/ (W * Cp);
 T_f = 50 + 273; %External fluid temperature(°C)
 
 %Thermic balance       dT/dA
-    dT =  - n * psi * (invU ^ (-1)) * (T_f - T );     % /dA
+    dT =  - n * psi * (invU ^ (-1)) * (T_f - T ) * (pi * d * A);
 
 end

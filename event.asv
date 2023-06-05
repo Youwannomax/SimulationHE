@@ -8,7 +8,7 @@ function [position, isterminal, direction] = event(A, T, HEs, DiamT)
     for i = 1:length(HEs)
         % Convert position to area
         AreaStart = pi * DiamT * HEs(i).Position;
-        AreaEnd = AreaStart + HEs(i).NumberPipe * pi * HEs(i).DiameterPipe * HEs(i).Length;
+        AreaEnd = ArHEs(i).NumberPipe * pi * HEs(i).DiameterPipe * HEs(i).Length;
 
         position(2 * i - 1) = A - AreaStart;               % Event triggered when reaching the start of the heat exchanger
         position(2 * i) = A - AreaEnd;                      % Event triggered when reaching the end of the heat exchanger

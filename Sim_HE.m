@@ -2,8 +2,22 @@ clear; clc; close all;
 
 %% Initialisation of Heat Exchanger
 
-% Define the tube's length
-L = 2000;   % Length of the tube
+% Define parameters for the internal fluid
+
+Density = 1000;
+ThermalConduc = 0.6;
+Cp = 4000;
+
+% Define parameters for the Tube
+nT = 1;
+nThick = 0.05;
+DiamT = 0.70;
+ThermalT = 40;
+LT = 70;   % Length of the tube
+PositionT = 0;
+MassFlowRate = 0.5;
+
+
 
 
 % Initial temperature of fluid
@@ -11,26 +25,28 @@ T0 = 35 + 273;
 
 
 % The tube is considered as a heat exchanger
-Tube = HeatExchanger(1, 0.1, 0.05, 400, ...
-                    L, ...                      % Lenght L
-                    0, ...                      % Position 0
-                    0.5, ...
+Tube = HeatExchanger(nT, nThick, DiamT, ThermalT, ...
+                    LT, ...                     % Lenght L
+                    PositionT, ...                      % Position 0
+                    MassFlowRate, ...
                     T0, ...                     % Temperature
-                    1000, 0.6, 4000);
+                    Density, ThermalConduc, Cp);
+
+A = LT * pi * DiamT ;
 
 %start with tube as a heat exchanger
 currentHe = Tube; 
 
 %% List of heat exchangers
 
-HE1 = HeatExchanger(30, 0.1, 0.05, 20, ...
-                    200, ...
-                    250, ...
+HE1 = HeatExchanger(18, 0.05, 0.07, 400, ...
+                    1, ...
+                    2, ...
                     0.5, T0, ...
                     1000, ...
                     0.6, 4000);
 
-HE2 = HeatExchanger(9, 0.1, 0.05, 400, ...
+HE2 = HeatExchanger(18, 0.1, 0.05, 400, ...
                     10, ...
                     80, ...
                     0.5, T0, 1000, 0.6, 1000);
@@ -40,52 +56,53 @@ HE3 = HeatExchanger(18, 0.1, 0.05, 400, ...
                     500, ...
                     0.5, T0, 1000, 0.6, 1000);
 
-HEs = [HE1];        % array of heat exchangers
-HEs2 = [HE1, HE3];  % array of heat exchangers
+
+HEs = [Tube];        % array of heat exchangers
+HEs2 = [HE1, HE2];  % array of heat exchangers
 
 %% Initialisation of the integration
 
 % Initialize the result
 
-xResult = [];
+AResult = [];
 TResult = [];
 
 
 % Initial position (Area)
-xe = 0;
-xf = L;
+Ae = 0;
+Af = A;     %Maximum Area
 y0 = T0;
-xspan = [0 xf];
+xspan = [0 Af];
 
 % Calculate remaining length
-remainingLength = L - sum([HEs.Length]);
+remainingArea = LT - sum([HEs.Length]);
 
 
 %% Integration
 
-options = odeset('Events', @(t, T) event(t, T, HEs), 'MaxStep', 1e-1); 
+options = odeset('Events', @(t, T) event(t, T, HEs, DiamT), 'MaxStep',0.1); 
 
-while xe < xf
+while Ae < Af
     
-    % xe :   position at the event
+    % Ae :   position at the event
     % ye :   temperature at the event
     % ie :   "id" of the event
 
-    [x, T, xe, ye, ie] = ode45(@(x, T) odefoncHE(x, T, currentHe), xspan, y0, options);
+    [A, T, Ae, ye, ie] = ode45(@(x, T) odefoncHE(A, T, currentHe), xspan, y0, options);
     
     
 
     % debug
     disp("Event(s) trigerred : " + ie);
-    disp("Position :" + x(end))
-    disp("Position of the event :" + xe)
+    disp("Position :" + A(end))
+    disp("Position of the event :" + Ae)
     y0 = T(end);
  
     % Store the results
-    xResult = [xResult; x];
+    AResult = [AResult; A];
     TResult = [TResult; T];
 
-    if x(end) >= xf
+    if A(end) >= Af
         break;
     end
     
@@ -100,55 +117,55 @@ while xe < xf
 
     if isempty(ie)
         currentHe = Tube;
-        remainingLength = remainingLength - (xf - xe(end));
-        if remainingLength < 0
-            remainingLength = 0;
+        remainingArea = remainingArea - (Af - Ae(end));
+        if remainingArea < 0
+            remainingArea = 0;
         end
-        Tube.Length = remainingLength;
+        Tube.Length = remainingArea;
     else
         if mod(ie(1), 2) == 1                       %Position of a HE
             currentHe = HEs((ie(1) + 1) / 2);       %Set to the HE
-            remainingLength = remainingLength - (xe(end) - currentHe.Position);
-            if remainingLength < 0
-                remainingLength = 0;                %Avoiding negative number
+            remainingArea = remainingArea - (Ae(end) - currentHe.Position);
+            if remainingArea < 0
+                remainingArea = 0;                %Avoiding negative number
             end
-            currentHe.Length = remainingLength;
+            currentHe.Length = remainingArea;
         else                        %End of a HE
             currentHe = Tube;       %Set to the tube
-            remainingLength = remainingLength - HEs(ie(1) / 2).Length;
-            if remainingLength < 0
-                remainingLength = 0;                %Avoiding negative number
+            remainingArea = remainingArea - HEs(ie(1) / 2).Length;
+            if remainingArea < 0
+                remainingArea = 0;                %Avoiding negative number
             end
-            Tube.Length = remainingLength;          %Set remain length of the tube
+            Tube.Length = remainingArea;          %Set remain length of the tube
         end
     end
 
     % Update the position for the next integration
-    x = xe(end);
-    xspan = [xe(end) xf];
+    A = Ae(end);
+    xspan = [Ae(end) Af];
 
 end
 
 % Tube without any heat exchanger
 options_noHE = odeset('MaxStep', 1e-1);
-[x_noHE, T_noHE] = ode15s(@(x, T) odefoncHE(x, T, Tube), [0 xf], T0, options_noHE);
+[x_noHE, T_noHE] = ode15s(@(x, T) odefoncHE(x, T, Tube), [0 Af], T0);
 
 
 %% Plot and figure
 
 % Plot temperature vs position
 
-plot(xResult, TResult, 'b');
+plot(AResult, TResult, 'b');
 
 hold on;
 
 plot(x_noHE, T_noHE, 'black--')
-plot(xResult, (50 + 273)*ones(1, length(TResult)), 'r')
+plot(AResult, (50 + 273)*ones(1, length(TResult)), 'r')
 
 % Vertical for each HE
 for i = 1:length(HEs)
-    x_start = HEs(i).Position;
-    x_end = HEs(i).Position + HEs(i).Length;
+    x_start = pi * DiamT * HEs(i).Position;
+    x_end = x_start + HEs(i).NumberPipe * pi * HEs(i).DiameterPipe * HEs(i).Length;
     y_start = min(TResult);
     y_end = max(TResult);
     plot([x_start, x_start], [y_start, y_end], 'k-', 'LineWidth', 1.5);
